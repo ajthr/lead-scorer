@@ -1,0 +1,17 @@
+# Core Exclusions
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
