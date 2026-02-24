@@ -1,0 +1,44 @@
+name: ALS | Project Board Automation
+
+on:
+  push:
+    branches: ['feat/ALS-*', 'fix/ALS-*']
+  pull_request:
+    types: [opened, reopened, merged]
+    branches: [develop]
+
+jobs:
+  track-task:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move Linked Task (In Progress)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/feat/ALS-')
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: |
+          echo "Branch pushed: Moving task to In Progress"
+          # Logic to extract ALS ID and update Project V2 status via GH CLI
+          # Extracting ID from branch name: refs/heads/feat/ALS-S1-T1-desc -> ALS-S1-T1
+          TASK_ID=$(echo "${{ github.ref }}" | grep -oP 'ALS-S\d+-T\d+')
+          echo "Target Task: $TASK_ID"
+          # gh project item-edit --id ... --field "Status" --value "In Progress"
+
+      - name: Move Linked Task (In Review)
+        if: github.event_name == 'pull_request' && github.event.action == 'opened'
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: |
+          echo "PR opened: Moving task to In Review"
+          TASK_ID=$(echo "${{ github.head_ref }}" | grep -oP 'ALS-S\d+-T\d+')
+          echo "Target Task: $TASK_ID"
+          # gh project item-edit --id ... --field "Status" --value "In Review"
+
+      - name: Move Linked Task (Done)
+        if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: |
+          echo "PR merged: Moving task to Done"
+          TASK_ID=$(echo "${{ github.head_ref }}" | grep -oP 'ALS-S\d+-T\d+')
+          echo "Target Task: $TASK_ID"
+          # gh project item-edit --id ... --field "Status" --value "Done"
